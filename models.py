@@ -1,40 +1,45 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
+# Import required SQLAlchemy components and datetime
+from sqlalchemy import Column, Integer, Float, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
-# create the base class for declarative models
+# Create the base class for declarative models
 Base = declarative_base()
-# Create SQLite database engine
-engine = create_engine('sqlite://health_predictions.db', echo=True)
-# create a sessionmaker factory bound to our database
-Session = sessionmaker(bind=engine)
 
+# Create SQLite database engine
+# Using SQLite for simplicity - stores data in a local file
+engine = create_engine('sqlite:///health_predictions.db')
+
+# Create a sessionmaker factory bound to our database
+SessionLocal = sessionmaker(bind=engine)
 
 class HealthData(Base):
-    __tablename__ = "health_data"
-
-    # Primary Key as unique identifier
+    """
+    Database model for storing health predictions and user inputs
+    Includes various lifestyle factors and the resulting prediction
+    """
+    __tablename__ = "health_data"  # Name of the database table
+    
+    # Primary key for unique identification of each record
     id = Column(Integer, primary_key=True, index=True)
-
-    # User Inputs
-    sleep_hours = Column(Float)
-    exercise_hours = Column(Float)
-    stress_levevl = Column(Integer)
-    social_activity = Column(Integer)
-    work_hours = Column(Float)
-    screen_time = Column(Float)
-
-    # Model Prediction Output
-    prediction = Column(String)
-
+    
+    # User input fields for lifestyle factors
+    sleep_hours = Column(Float)        # Average daily sleep in hours
+    exercise_hours = Column(Float)     # Weekly exercise hours
+    stress_level = Column(Integer)     # Stress level on scale 1-10
+    social_activity = Column(Integer)  # Social activity level on scale 1-10
+    work_hours = Column(Float)         # Daily work hours
+    screen_time = Column(Float)        # Daily screen time in hours
+    
+    # Model prediction output
+    prediction = Column(String)        # Risk level prediction (Low/Medium/High)
+    
     # Timestamp for tracking when the prediction was made
-    timestamp = Column(DateTime, default=datetime.utc)
-
+    timestamp = Column(DateTime, default=datetime.utcnow)
 
 # Create all defined tables in the database
 Base.metadata.create_all(bind=engine)
-
 
 def get_db():
     """
@@ -46,5 +51,4 @@ def get_db():
     try:
         yield db
     finally:
-        db.close()
- 
+        db.close()  
